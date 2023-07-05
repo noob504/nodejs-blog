@@ -1,0 +1,33 @@
+<!-- serves the homepage -->
+
+<div class="author">
+    <h1 class="author__heading">Hi, I am Abhinaw</h1>
+    <p class="author__body">A Makeshift Engineer</p>
+</div>
+
+<img src="/img/hero-image.webp" alt="person looking out through window" class="hero-image" width="981" height="528">
+
+<section class="articles">
+    <h2 class="articles__heading">Latest Posts</h2>
+
+    <% data.forEach(post=> { %>
+        <div class="article-list">
+            <div class="article">
+                <a href="#">
+                    <span class="article-title">
+                        <%= post.title %>
+                    </span>
+                    <span class="article-list__date">
+                        <%= post.createdAt %>
+                    </span>
+                </a>
+            </div>
+        </div>
+        <% }) %>
+
+
+
+            <a href="#" class="pagination">&lt; View Older Posts</a>
+
+
+</section>
