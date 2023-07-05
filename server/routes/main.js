@@ -5,15 +5,112 @@ const router = express.Router();
 const Post = require("../models/Post");
 
 /* GET HOME */
-router.get("/", async (req, res) => {
-  const locals = {
-    title: "Blog - Homepage",
-    description: "This is the home page",
-  };
+/* adding pagination */
 
+router.get("/", async (req, res) => {
   try {
-    const data = await Post.find();
-    res.render("index", { locals, data });
+    const locals = {
+      title: "Blog - Homepage",
+      description: "This is the home page",
+    };
+
+    // let postsPerPage = 10;
+    let postsPerPage = 5;
+    let page = req.query.page || 1; // this runs the query similar to "localhost:5000?page=2"
+
+    const data = await Post.aggregate([
+      {
+        $sort: { createdAt: -1 },
+      },
+    ])
+      .skip(postsPerPage * page - postsPerPage)
+      .limit(postsPerPage)
+      .exec();
+
+    const blogPostsCount = await Post.count();
+    const nextPage = parseInt(page) + 1;
+    const hasNextPage = nextPage <= Math.ceil(blogPostsCount / postsPerPage);
+
+    res.render("index", {
+      locals,
+      data,
+      current: page,
+      nextPage: hasNextPage ? nextPage : null,
+    });
+  } catch (error) {
+    console.log(error);
+  }
+});
+
+// // regular get home
+// router.get("/", async (req, res) => {
+//   const locals = {
+//     title: "Blog - Homepage",
+//     description: "This is the home page",
+//   };
+
+//   try {
+//     const data = await Post.find();
+//     res.render("index", { locals, data });
+//   } catch (error) {
+//     console.log(error);
+//   }
+// });
+
+// router.get("/about", (req, res) => {
+//   res.render("about");
+// });
+
+/* GET POST */
+// post :id
+router.get("/post/:id", async (req, res) => {
+  try {
+    let slug = req.params.id;
+
+    const data = await Post.findById({ _id: slug });
+
+    const locals = {
+      title: data.title,
+      description: "This is a post",
+    };
+
+    res.render("post", { locals, data });
+  } catch (error) {
+    console.log(error);
+  }
+});
+
+/* POST */
+// Post - searchTerm
+
+router.post("/search", async (req, res) => {
+  try {
+    const locals = {
+      title: "Search",
+      description: "This is a post",
+    };
+
+    let searchTerm = req.body.searchTerm;
+    console.log(searchTerm);
+
+    const searchWithoutSpecialChar = searchTerm.replace(/[^a-zA-Z0-9]/g, " ");
+
+    // query
+    const data = await Post.find({
+      $or: [
+        {
+          title: {
+            $regex: new RegExp(searchWithoutSpecialChar),
+            $options: "i",
+          },
+        },
+        {
+          body: { $regex: new RegExp(searchWithoutSpecialChar), $options: "i" },
+        },
+      ],
+    });
+
+    res.render("search", { locals, data });
   } catch (error) {
     console.log(error);
   }

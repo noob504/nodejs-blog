@@ -340,8 +340,9 @@ img {
   position: absolute;
   top: 0;
   right: 0;
-  color: var(--gray-light);
+  color: var(--black);
   padding: 15px;
+  cursor: pointer;
 }
 
 
